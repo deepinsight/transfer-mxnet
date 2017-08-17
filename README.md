@@ -50,13 +50,13 @@ export MXNET_CPU_WORKER_NTHREADS=15
 Training stage 1, do softmax training on source dataset only.
 
 ```
-python fine-tune.py --train-stage 0 --pretrained-model 'model/resnet-152' --pretrained-epoch 0 --model-prefix 'model/mmd' --lr 0.01 --lr-step-epochs '10,16' --num-epochs 18 --lr-factor 0.1 --gpus 0,1,2,3
+python fine-tune.py --train-stage 0 --pretrained-model 'model/resnet-152' --pretrained-epoch 0 --model-prefix 'model/mmd' --num-classes 263 --lr 0.01 --lr-step-epochs '10,16' --num-epochs 18 --lr-factor 0.1 --gpus 0,1,2,3 --batch-size 64
 ```
 
 Training stage 2, do softmax+mmd joint training to produce final model.
 
 ```
-python fine-tune.py --train-stage 1 --pretrained-model 'model/mmd' --pretrained-epoch 18 --model-prefix 'model/mmd1' --lr 0.0001 --lr-step-epochs '6,8,10,12' --num-epochs 14 --lr-factor 0.5 --gpus 0,1,2,3
+python fine-tune.py --train-stage 1 --pretrained-model 'model/mmd' --pretrained-epoch 18 --model-prefix 'model/mmd1' --num-classes 263 --lr 0.0001 --lr-step-epochs '6,8,10,12' --num-epochs 14 --lr-factor 0.5 --gpus 0,1,2,3 --batch-size 64
 ```
 
 Parameter Tuning
