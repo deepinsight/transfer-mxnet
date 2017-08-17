@@ -5,7 +5,6 @@ import numpy as np
 import cv2
 import random
 import json
-from common import find_mxnet
 import mxnet as mx
 import math
 
@@ -57,7 +56,8 @@ def multi_kernel_distance2(distance2, kernel_num, base_gamma):
 
 
 def mmd(data, fc, args):
-  print('mmd batch_size', args.batch_per_gpu)
+  batch_size = args.batch_per_gpu
+  print('mmd batch_size', batch_size)
   assert batch_size%4==0
 
   #static params

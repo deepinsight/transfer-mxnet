@@ -33,7 +33,7 @@ def get_fine_tune_model(symbol, arg_params, args):
     last_before = all_layers[layer_name+'_output']
     lr_mult = 1
     feature = last_before
-    fc = mx.symbol.FullyConnected(data=fc7, num_hidden=args.num_classes, name='fc', lr_mult=lr_mult) #, lr_mult=10)
+    fc = mx.symbol.FullyConnected(data=feature, num_hidden=args.num_classes, name='fc', lr_mult=lr_mult) #, lr_mult=10)
     net = mmd.mmd(feature, fc, args)
     if args.train_stage==0:
       new_args = dict({k:arg_params[k] for k in arg_params if 'fc' not in k})
@@ -63,6 +63,8 @@ if __name__ == "__main__":
                         help='training stage, train softmax only in training stage0 and use mmd loss in training stage1')
     parser.add_argument('--null-label', type=int, default=9999,
                         help='indicate the label id of invalid label')
+    parser.add_argument('--use-dan', action="store_true", default=False,
+                        help='use DAN instead of JAN')
     # use less augmentations for fine-tune
     data.set_data_aug_level(parser, 2)
     parser.set_defaults(data_dir="./data", top_k=0, kv_store='local', data_nthreads=15)
