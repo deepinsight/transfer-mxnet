@@ -35,9 +35,9 @@ Data Preparation
 If you want to train your own models, please use following steps. 
 For data preparation:
 - Download mxnet resnet-152 imagenet-11k pretrained model to `model/` directory, from [here](http://data.mxnet.io/models/imagenet-11k/resnet-152/).
-- Prepare your source domain dataset to `model/source.lst` in mxnet `lst` format.
-- Prepare your target domain dataset to `model/target.lst`. Generally, label id in `target.lst` should be null-label(9999 by default). But semi-supervised learning is also allowed, you can choose hundreds of items to be their valid label id.
-- Prepare your validation dataset in target domain to `model/val.lst`. It can be the same with `model/target.lst` but all with valid labels.
+- Prepare your source domain dataset to `data/source.lst` in mxnet `lst` format.
+- Prepare your target domain dataset to `data/target.lst`. Generally, label id in `target.lst` should be null-label(9999 by default). But semi-supervised TL is also allowed, you can choose hundreds of items to be their real valid label id.
+- Prepare your validation dataset in target domain to `data/val.lst`. It can be the same with `data/target.lst` but all with valid labels.
 
 
 Training Model
