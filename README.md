@@ -67,6 +67,6 @@ Use AdaBN
 ```
 python adabn.py --model <trained-model-prefix> --epoch <load-epoch> --val 'data/val.lst' --gpu 0
 ```
-It will firstly calculate BN statistics and write back to pre-loaded model. Use this modified model to validate the classification accuracy. You can change the corresponding BN layers name in source code.
+It will firstly calculate BN statistics using target domain dataset then write back to preloaded model. Second, use this modified model to validate the classification accuracy on target dataset. You can change the corresponding BN layers name in source code.
 
 
