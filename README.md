@@ -29,12 +29,11 @@ During training, we set all labels in `Target dataset` to null-label(9999 by def
 | DAN(mmd)     |  73.7%   |
 | JAN(jmmd)    |  78.9%   |
 
+If you want to train your own models with mmd(especically JAN as it is the best approach), please use following steps.
 
 Data Preparation
 ---------------
-If you want to train your own models, please use following steps. 
-For data preparation:
-- Download mxnet resnet-152 imagenet-11k pretrained model to `model/` directory, from [here](http://data.mxnet.io/models/imagenet-11k/resnet-152/).
+ - Download mxnet resnet-152 imagenet-11k pretrained model to `model/` directory, from [here](http://data.mxnet.io/models/imagenet-11k/resnet-152/).
 - Prepare your source domain dataset to `data/source.lst` in mxnet `lst` format.
 - Prepare your target domain dataset to `data/target.lst`. Generally, label id in `target.lst` should be null-label(9999 by default). But semi-supervised TL is also allowed, you can choose hundreds of items to be their real valid label id.
 - Prepare your validation dataset in target domain to `data/val.lst`. It can be the same with `data/target.lst` but all with valid labels.
@@ -62,4 +61,12 @@ python fine-tune.py --train-stage 1 --pretrained-model 'model/mmd' --pretrained-
 Parameter Tuning
 ---------------
 TODO, check them in source code now.
+
+Use AdaBN
+---------------
+```
+python adabn.py --model <trained-model-prefix> --epoch <load-epoch> --val 'data/val.lst' --gpu 0
+```
+It will firstly calculate BN statistics and write back to pre-loaded model. Use this modified model to validate the classification accuracy. You can change the corresponding BN layers name in source code.
+
 
