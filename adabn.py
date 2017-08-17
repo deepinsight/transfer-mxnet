@@ -1,13 +1,12 @@
 import os
 os.environ['MXNET_CUDNN_AUTOTUNE_DEFAULT'] = '0'
 import sys
+import argparse
 import numpy as np
 import cv2
 import random
 import json
-from common import find_mxnet
 import mxnet as mx
-from guuker import prt
 
 def get_bn_input_symbol(bn_symbol):
   for sym in bn_symbol.get_children():
@@ -60,6 +59,7 @@ def ch_dev(arg_params, aux_params, ctx):
 
 img_sz = 360
 crop_sz = 320
+batch_sz = 64
 
 def image_preprocess(img_full_path, loop):
   img = cv2.cvtColor(cv2.imread(img_full_path), cv2.COLOR_BGR2RGB)
@@ -81,24 +81,6 @@ def image_preprocess(img_full_path, loop):
   img = np.swapaxes(img, 1, 2)  # change to r,g,b order
   return img
 
-imgs = []
-labels = []
-val_file = 'data-asv/val.lst'
-_max_label = 262
-max_label = 0
-with open(val_file, 'r') as f:
-  for line in f:
-    line = line.strip()
-    vec = line.split("\t")
-    id = int(vec[0])
-    label = int(vec[1])
-    max_label = max(max_label, label)
-    image_path = vec[2]
-    imgs.append(image_path)
-    labels.append(label)
-if _max_label is not None:
-  max_label = _max_label
-batch_sz = 64
 
 def apply_adabn(ctx, sym, arg_params, aux_params, imgs):
   batch_head = 0
@@ -119,7 +101,8 @@ def apply_adabn(ctx, sym, arg_params, aux_params, imgs):
     #print(v.__class__)
     new_auxs[k] = v.as_in_context(ctx)
   while batch_head<len(imgs):
-    prt("processing batch %d" % batch_num)
+    print("processing batch %d" % batch_num)
+    
     current_batch_sz = min(batch_sz, len(imgs)-batch_head)
     input_blob = np.zeros((current_batch_sz,3,crop_sz,crop_sz))
     #print batch_head
@@ -164,7 +147,7 @@ def do_eval(ctx, sym, arg_params, aux_params, imgs, labels):
   batch_num = 0
   X = None
   while batch_head<len(imgs):
-    prt("processing batch %d" % batch_num)
+    print("processing batch %d" % batch_num)
     current_batch_sz = min(batch_sz, len(imgs)-batch_head)
     input_blob = np.zeros((current_batch_sz,3,crop_sz,crop_sz))
     #print batch_head
@@ -203,18 +186,43 @@ def do_eval(ctx, sym, arg_params, aux_params, imgs, labels):
   acc /= len(imgs)
   print("acc %f" % acc)
 
-prefix = 'model/asvauto-resnet-152'
-epoch = int(sys.argv[1])
-gpu_id = int(sys.argv[2]) #GPU ID for infer
-print("input epoch", epoch)
-print("input gpu_id", gpu_id)
-ctx = mx.gpu(gpu_id)
-sym, arg_params, aux_params = mx.model.load_checkpoint(prefix, epoch)
-arg_params, aux_params = ch_dev(arg_params, aux_params, ctx)
-print('cal adabn params...')
-arg_params, aux_params = apply_adabn(ctx, sym, arg_params, aux_params, imgs)
-print('eval..')
-do_eval(ctx, sym, arg_params, aux_params, imgs, labels)
+if __name__ == "__main__":
+  parser = argparse.ArgumentParser(description="adabn runner",
+                                   formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+  parser.add_argument('--model', type=str, 
+                      help='load trained model')
+  parser.add_argument('--epoch', type=int, 
+                      help='load trained model epoch')
+  parser.add_argument('--gpu', type=int, default=0, 
+                      help='gpu used for validation')
+  parser.add_argument('--val', type=str, default='data/val.lst', 
+                      help='lst file used for validation')
+  args = parser.parse_args()
+  imgs = []
+  labels = []
+  val_file = args.val
+  with open(val_file, 'r') as f:
+    for line in f:
+      line = line.strip()
+      vec = line.split("\t")
+      id = int(vec[0])
+      label = int(vec[1])
+      image_path = vec[2]
+      imgs.append(image_path)
+      labels.append(label)
+
+  prefix = args.model
+  epoch = args.epoch
+  gpu_id = args.gpu
+  print("input epoch", epoch)
+  print("input gpu_id", gpu_id)
+  ctx = mx.gpu(gpu_id)
+  sym, arg_params, aux_params = mx.model.load_checkpoint(prefix, epoch)
+  arg_params, aux_params = ch_dev(arg_params, aux_params, ctx)
+  print('cal adabn params...')
+  arg_params, aux_params = apply_adabn(ctx, sym, arg_params, aux_params, imgs)
+  print('eval..')
+  do_eval(ctx, sym, arg_params, aux_params, imgs, labels)
 
 
 
